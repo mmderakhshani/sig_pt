@@ -3,15 +3,13 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.autograd import Variable as V
 import numpy as np
-import pdb
 from arch import Net as Model
 import torch.nn.functional as F
 
 model_url = './signetf_lambda0.95.pkl'
-num_class = 115
 
 # Model and Optimizer definition
-model = Model(model_url, num_class)
+model = Model(model_url)
 print(model)
 model.eval()
 
