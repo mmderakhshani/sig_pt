@@ -59,6 +59,7 @@ class Net(nn.Module):
             elif ndim == 2:
                 in_channel, out_channel = p.shape
                 classifier += [nn.Linear(in_channel, out_channel, bias=False)]
+                classifier[-1].weight.data = torch.from_numpy(np.array(p.T))
                 # classifier += [nn.ReLU()]
                 classifier_flag = True
             elif ndim == 1:
