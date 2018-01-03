@@ -7,7 +7,7 @@ import pdb
 
 class Net(nn.Module):
     """docstring for Net"""
-    def __init__(self, model_url):
+    def __init__(self, model_url, num_class):
         super(Net, self).__init__()
         self.model_url = model_url
         ext, cls = self.build_architecture()
@@ -44,23 +44,18 @@ class Net(nn.Module):
                 out_channel, in_channel, F, _ = p.shape
                 if F == 11:
                     extractor += [nn.Conv2d(in_channel, out_channel, F, stride=4, padding=0, bias=False)]
-                    # extractor[-1].weight.data = torch.from_numpy(self.rot90(p))
-                    extractor[-1].weight.data = torch.from_numpy(np.array(p[:, :, ::-1, ::-1]))
+                    extractor[-1].weight.data = torch.from_numpy(np.array(p))
                 elif F==5:
                     extractor += [nn.Conv2d(in_channel, out_channel, F, stride=1, padding=2, bias=False)]
-                    # extractor[-1].weight.data = torch.from_numpy(self.rot90(p))
-                    extractor[-1].weight.data = torch.from_numpy(np.array(p[:, :, ::-1, ::-1]))
+                    extractor[-1].weight.data = torch.from_numpy(np.array(p))
                 elif F==3:
                     extractor += [nn.Conv2d(in_channel, out_channel, F, stride=1, padding=1, bias=False)]
-                    # extractor[-1].weight.data = torch.from_numpy(self.rot90(p))
-                    extractor[-1].weight.data = torch.from_numpy(np.array(p[:, :, ::-1, ::-1]))
+                    extractor[-1].weight.data = torch.from_numpy(np.array(p))
                     conv3 = True
-                # extractor += [nn.ReLU()]
             elif ndim == 2:
                 in_channel, out_channel = p.shape
                 classifier += [nn.Linear(in_channel, out_channel, bias=False)]
                 classifier[-1].weight.data = torch.from_numpy(np.array(p.T))
-                # classifier += [nn.ReLU()]
                 classifier_flag = True
             elif ndim == 1:
                 if BN_counter == 4:
@@ -72,27 +67,19 @@ class Net(nn.Module):
                     in_channel = p.shape
                     if not classifier_flag:
                         extractor += [nn.BatchNorm2d(in_channel)]
-                        extractor[-1].weight.data = torch.from_numpy(parameters[i-2])
                         extractor[-1].bias.data = torch.from_numpy(parameters[i-3])
+                        extractor[-1].weight.data = torch.from_numpy(parameters[i-2])
                         extractor[-1].running_mean = torch.from_numpy(parameters[i-1])
-                        # extractor[-1].running_var = torch.from_numpy(parameters[i])
                         extractor[-1].running_var = torch.from_numpy((1./(parameters[i]**2)) - 1e-4)
                         extractor += [nn.ReLU()]
                         if not conv3:
                             extractor += [nn.MaxPool2d(3,stride=2)]
                     else:
                         classifier += [nn.BatchNorm1d(in_channel)]
-                        classifier[-1].weight.data = torch.from_numpy(parameters[i-2])
                         classifier[-1].bias.data = torch.from_numpy(parameters[i-3])
+                        classifier[-1].weight.data = torch.from_numpy(parameters[i-2])
                         classifier[-1].running_mean = torch.from_numpy(parameters[i-1])
-                        # extractor[-1].running_var = torch.from_numpy(parameters[i])
                         classifier[-1].running_var = torch.from_numpy((1./(parameters[i]**2)) - 1e-4)
                         classifier += [nn.ReLU()]
                     BN_flag = False
         return extractor, classifier
-
-    def rot90(self, W):
-        for i in range(W.shape[0]):
-            for j in range(W.shape[1]):
-                W[i, j] = np.rot90(W[i, j], 2)
-        return W
