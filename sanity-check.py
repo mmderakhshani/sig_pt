@@ -21,5 +21,4 @@ inp = V(torch.from_numpy(input_np).type(torch.FloatTensor).unsqueeze(0).unsqueez
 output = model(inp)
 output_np = output.data.numpy()
 
-pdb.set_trace()
 print("Sum of Absolute Error: {}".format(np.abs(output_np - test).sum()))
